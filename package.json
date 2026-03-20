@@ -1,0 +1,8 @@
+{
+  "name": "relativ-ui-automation",
+  "private": true,
+  "scripts": {
+    "test:all": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\run-all-tests.ps1",
+    "test:all:login": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\run-all-tests.ps1 -IncludeLogin"
+  }
+}

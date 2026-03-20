@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Login Test" type="JUnit" factoryName="JUnit">
+    <module name="https-www.relativ.tech-" />
+    <option name="MAIN_CLASS_NAME" value="com.relativ.tests.auth.LoginTest" />
+    <option name="PACKAGE_NAME" value="" />
+    <option name="TEST_OBJECT" value="class" />
+    <option name="METHOD_NAME" value="" />
+    <option name="VM_PARAMETERS" value="-Dorg.slf4j.simpleLogger.defaultLogLevel=warn" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <envs>
+      <env name="RELATIV_BASE_URL" value="http://localhost:3000" />
+      <env name="RELATIV_HEADLESS" value="true" />
+    </envs>
+    <shortenClasspath name="ARGS_FILE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
