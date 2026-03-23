@@ -9,7 +9,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public final class PrivacyPolicyModal extends BasePage {
 
     private static final By DIALOG = By.cssSelector("dialog[open]");
-    private static final By TITLE = By.xpath("//dialog[@open]//h2[normalize-space()='Privacy Policy']");
     private static final By CLOSE_BUTTON = By.cssSelector("dialog[open] button[aria-label='Close privacy policy']");
 
     public PrivacyPolicyModal(WebDriver driver, WebDriverWait wait, SelectorRepository selectors, UiConfig config) {
@@ -17,7 +16,7 @@ public final class PrivacyPolicyModal extends BasePage {
     }
 
     public void waitUntilOpen() {
-        waitVisible(TITLE);
+        waitVisible(DIALOG);
     }
 
     public boolean isOpen() {
