@@ -1,12 +1,31 @@
 package com.relativ.core;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public final class UiConfig {
 
-    private static final String DEFAULT_BASE_URL = "http://localhost:3000";
+    private static final String DEFAULT_LOCAL_BASE_URL = "http://localhost:3000";
+    private static final String DEFAULT_REMOTE_BASE_URL = "https://www.relativ.tech";
+    private static final Duration BASE_URL_CONNECT_TIMEOUT = Duration.ofSeconds(2);
+    private static final Duration BASE_URL_REQUEST_TIMEOUT = Duration.ofSeconds(4);
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(BASE_URL_CONNECT_TIMEOUT)
+            .build();
+    private static final List<String> RELATIV_MARKERS = List.of(
+            "Architects Of Fintech Flow",
+            "Relativ Tech"
+    );
 
     private final String baseUrl;
     private final String loginUrl;
@@ -25,9 +44,9 @@ public final class UiConfig {
     private final int visualSettleMillis;
 
     public UiConfig() {
-        this.baseUrl = read("relativ.baseUrl", "RELATIV_BASE_URL", DEFAULT_BASE_URL);
+        this.baseUrl = resolveBaseUrl();
         this.loginUrl = read("relativ.loginUrl", "RELATIV_LOGIN_URL", "");
-        this.headless = Boolean.parseBoolean(read("relativ.headless", "RELATIV_HEADLESS", "true"));
+        this.headless = Boolean.parseBoolean(read("relativ.headless", "RELATIV_HEADLESS", "false"));
         this.username = read("relativ.username", "RELATIV_USERNAME", "");
         this.password = read("relativ.password", "RELATIV_PASSWORD", "");
         this.clickKeys = Arrays.stream(read("relativ.clickKeys", "RELATIV_CLICK_KEYS", "").split(","))
@@ -165,6 +184,51 @@ public final class UiConfig {
             return Math.max(parsed, 0);
         } catch (NumberFormatException ignored) {
             return defaultValue;
+        }
+    }
+
+    private static String resolveBaseUrl() {
+        String configuredBaseUrl = read("relativ.baseUrl", "RELATIV_BASE_URL", "");
+        if (!configuredBaseUrl.isBlank()) {
+            return configuredBaseUrl;
+        }
+
+        return candidateBaseUrls().stream()
+                .filter(UiConfig::looksLikeRelativSite)
+                .findFirst()
+                .orElse(DEFAULT_LOCAL_BASE_URL);
+    }
+
+    private static List<String> candidateBaseUrls() {
+        List<String> candidates = new ArrayList<>();
+        for (int port = 3000; port <= 3005; port++) {
+            candidates.add("http://localhost:" + port);
+            candidates.add("http://127.0.0.1:" + port);
+        }
+        candidates.add(DEFAULT_REMOTE_BASE_URL);
+        return candidates;
+    }
+
+    private static boolean looksLikeRelativSite(String baseUrl) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl))
+                    .timeout(BASE_URL_REQUEST_TIMEOUT)
+                    .GET()
+                    .build();
+            HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 400 || response.body() == null || response.body().isBlank()) {
+                return false;
+            }
+
+            String pageBody = response.body().toLowerCase(Locale.ROOT);
+            return RELATIV_MARKERS.stream()
+                    .map(marker -> marker.toLowerCase(Locale.ROOT))
+                    .anyMatch(pageBody::contains);
+        } catch (IOException | InterruptedException | IllegalArgumentException ignored) {
+            if (ignored instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return false;
         }
     }
 }

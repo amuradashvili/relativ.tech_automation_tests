@@ -5,7 +5,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 if (-not $env:RELATIV_BASE_URL) {
-    $env:RELATIV_BASE_URL = "http://localhost:3000"
+    Write-Host "RELATIV_BASE_URL not set. UiConfig will auto-detect a local Relativ app on ports 3000-3005 and then fall back to https://www.relativ.tech."
 }
 
 if (-not $env:RELATIV_HEADLESS) {
@@ -22,7 +22,7 @@ $mavenArgs += @(
 )
 
 Write-Host "Running AllPublicSiteTestsSuite"
-Write-Host "RELATIV_BASE_URL=$env:RELATIV_BASE_URL"
+Write-Host "RELATIV_BASE_URL=$(if ($env:RELATIV_BASE_URL) { $env:RELATIV_BASE_URL } else { '<auto-detect>' })"
 Write-Host "RELATIV_HEADLESS=$env:RELATIV_HEADLESS"
 Write-Host "Include login=$IncludeLogin"
 

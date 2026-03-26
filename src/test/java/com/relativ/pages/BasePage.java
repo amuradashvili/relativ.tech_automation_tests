@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public abstract class BasePage {
         logStep("Open URL " + url);
         driver.get(url);
         waitForDocumentReady();
+        ensureExpectedApplicationLoaded(url);
     }
 
     public void openPath(String path) {
@@ -42,6 +44,7 @@ public abstract class BasePage {
         logStep("Open path " + normalizePath(path) + " -> " + resolvedUrl);
         driver.get(resolvedUrl);
         waitForDocumentReady();
+        ensureExpectedApplicationLoaded(resolvedUrl);
     }
 
     public String currentUrl() {
@@ -249,5 +252,26 @@ public abstract class BasePage {
             return normalized.substring(0, normalized.length() - 1);
         }
         return normalized;
+    }
+
+    private void ensureExpectedApplicationLoaded(String resolvedUrl) {
+        URI uri = URI.create(resolvedUrl);
+        String host = uri.getHost();
+        if (host == null) {
+            return;
+        }
+
+        if (!"localhost".equalsIgnoreCase(host) && !"127.0.0.1".equals(host)) {
+            return;
+        }
+
+        String pageSource = driver.getPageSource().toLowerCase(Locale.ROOT);
+        if (pageSource.contains("hello world!")) {
+            throw new IllegalStateException(
+                    "RELATIV_BASE_URL resolved to " + resolvedUrl
+                            + ", but that address is serving a placeholder 'Hello World!' page instead of the Relativ site. "
+                            + "Start the Relativ Next.js app or set RELATIV_BASE_URL to the correct environment."
+            );
+        }
     }
 }

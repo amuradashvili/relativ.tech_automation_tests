@@ -71,7 +71,6 @@ Open a second PowerShell window and run all public-site test cases from this aut
 ```powershell
 cd C:\Users\am\OneDrive\Desktop\test_automation\https-www.relativ.tech-
 
-$env:RELATIV_BASE_URL="http://localhost:3000"
 $env:RELATIV_HEADLESS="true"
 
 .\mvnw test
@@ -214,7 +213,6 @@ Use this class when you want screenshot-based design validation for layout, colo
 ### Compare current UI against approved baselines
 
 ```powershell
-$env:RELATIV_BASE_URL="http://localhost:3000"
 $env:RELATIV_HEADLESS="true"
 
 .\mvnw "-Dtest=VisualRegressionTest" test
@@ -225,7 +223,6 @@ $env:RELATIV_HEADLESS="true"
 Run this only after a designer-approved UI change. It overwrites the saved baseline images in `src/test/resources/visual-baselines`.
 
 ```powershell
-$env:RELATIV_BASE_URL="http://localhost:3000"
 $env:RELATIV_HEADLESS="true"
 
 .\mvnw "-Dtest=VisualRegressionTest" "-Drelativ.visualUpdateBaselines=true" test
@@ -258,6 +255,6 @@ Supported system properties or environment variables:
 - `relativ.visualViewportHeight` / `RELATIV_VISUAL_VIEWPORT_HEIGHT`
 - `relativ.visualSettleMillis` / `RELATIV_VISUAL_SETTLE_MILLIS`
 
-If `RELATIV_BASE_URL` is not set, the suite falls back to `http://localhost:3000`. Set it explicitly only when you want to target a different environment.
+If `RELATIV_BASE_URL` is not set, the suite first auto-detects a local Relativ app on `http://localhost:3000` through `http://localhost:3005`. If none of those endpoints looks like the Relativ site, it falls back to `https://www.relativ.tech`. Set `RELATIV_BASE_URL` explicitly when you want to force a specific environment.
 
-If `RELATIV_HEADLESS` is not set, the suite falls back to `true`. This keeps visual regression screenshots stable in IntelliJ and command-line runs. If you want to watch the browser, set `RELATIV_HEADLESS=false`, but the visual baseline tests may not match exactly in that mode.
+If `RELATIV_HEADLESS` is not set, the suite falls back to `false` for direct IDE and Maven runs so Chrome opens visibly while you debug. The provided `run-all-tests.ps1` wrapper still defaults to headless mode for batch runs. If you want stable visual regression screenshots, set `RELATIV_HEADLESS=true`.
